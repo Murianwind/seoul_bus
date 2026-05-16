@@ -1,6 +1,7 @@
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.util import slugify
 from .const import DOMAIN, CONF_STATION_ID, CONF_STATION_NAME
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -16,6 +17,7 @@ class SeoulBusActiveSwitch(SwitchEntity, RestoreEntity):
         self._coordinator = coordinator
         self._station_id = station_id
         self._station_name = station_name
+        self.entity_id = f"switch.{DOMAIN}_{slugify(station_id)}_update_activation"
         self._attr_name = f"{station_name} 업데이트 활성화"
         self._attr_unique_id = f"{DOMAIN}_{station_id}_api_active_switch"
         self._attr_is_on = False
@@ -28,9 +30,9 @@ class SeoulBusActiveSwitch(SwitchEntity, RestoreEntity):
             manufacturer="Seoul Bus",
         )
 
-    async def async_added_to_hash(self) -> None:
+    async def async_added_to_hass(self) -> None:
         """이전 상태 복구"""
-        await super().async_added_to_hash()
+        await super().async_added_to_hass()
         last_state = await self.async_get_last_state()
         if last_state:
             self._attr_is_on = last_state.state == "on"
