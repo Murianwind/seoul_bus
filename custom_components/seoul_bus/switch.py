@@ -17,6 +17,8 @@ class SeoulBusActiveSwitch(SwitchEntity, RestoreEntity):
         self._coordinator = coordinator
         self._station_id = station_id
         self._station_name = station_name
+
+        # 엔티티 ID를 정류장 ID 기반 영문으로 강제 설정 (한글 자동 생성 방지)
         self.entity_id = f"switch.{DOMAIN}_{slugify(station_id)}_api_active"
         self._attr_name = f"{station_name} 업데이트 활성화"
         self._attr_unique_id = f"{DOMAIN}_{station_id}_api_active_switch"
