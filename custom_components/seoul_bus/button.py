@@ -13,7 +13,7 @@ class SeoulBusRefreshButton(ButtonEntity):
     def __init__(self, coordinator, station_id, station_name):
         self._coordinator = coordinator
         self._station_id = station_id
-        self._station_name = station_name # 누락되었던 변수 추가
+        self._station_name = station_name
         self._attr_name = f"{station_name} 새로고침"
         self._attr_unique_id = f"{DOMAIN}_{station_id}_refresh_button_entity"
 
@@ -22,6 +22,7 @@ class SeoulBusRefreshButton(ButtonEntity):
         return DeviceInfo(
             identifiers={(DOMAIN, self._station_id)},
             name=self._station_name,
+            manufacturer="Seoul Bus",
         )
 
     async def async_press(self) -> None:
