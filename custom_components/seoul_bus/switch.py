@@ -17,7 +17,7 @@ class SeoulBusActiveSwitch(SwitchEntity, RestoreEntity):
         self._coordinator = coordinator
         self._station_id = station_id
         self._station_name = station_name
-        self.entity_id = f"switch.{DOMAIN}_{slugify(station_id)}_update_activation"
+        self.entity_id = f"switch.{DOMAIN}_{slugify(station_id)}_api_activation"
         self._attr_name = f"{station_name} 업데이트 활성화"
         self._attr_unique_id = f"{DOMAIN}_{station_id}_api_active_switch"
         self._attr_is_on = False
@@ -42,6 +42,7 @@ class SeoulBusActiveSwitch(SwitchEntity, RestoreEntity):
         """스위치 ON: API 업데이트 활성화"""
         self._attr_is_on = True
         self._coordinator.api_enabled = True
+        self._coordinator.async_update_listeners()
         await self._coordinator.async_request_refresh()
         self.async_write_ha_state()
 
@@ -49,4 +50,5 @@ class SeoulBusActiveSwitch(SwitchEntity, RestoreEntity):
         """스위치 OFF: API 업데이트 중단"""
         self._attr_is_on = False
         self._coordinator.api_enabled = False
+        self._coordinator.async_update_listeners()
         self.async_write_ha_state()
