@@ -90,11 +90,9 @@ class SeoulBusStationSensor(SeoulBusBase, SensorEntity):
 
     @property
     def state(self):
-        api_on = getattr(self.coordinator, "api_enabled", False)
-        status = (self.coordinator.data or {}).get("status")
-        if not api_on:
-            return "중지됨 (스위치 OFF)"
-        return "운영중" if status == "active" else "대기 중"
+        if not getattr(self.coordinator, "api_enabled", False):
+            return "업데이트 대기중"
+        return "운영중"
 
 class SeoulBusLastUpdateSensor(SeoulBusBase, SensorEntity):
     def __init__(self, coordinator, entry, station_id, station_name, unique_id):
@@ -134,6 +132,9 @@ class SeoulBusSensor(SeoulBusBase, SensorEntity):
 
     @property
     def state(self):
+        if not getattr(self.coordinator, "api_enabled", False):
+            return "업데이트 대기중"
+            
         data = self.coordinator.data or {}
         items = data.get("items", [])
         
