@@ -20,6 +20,7 @@ class SeoulBusActiveSwitch(SwitchEntity, RestoreEntity):
         self.entity_id = f"switch.{DOMAIN}_{slugify(station_id)}_api_active"
         self._attr_name = f"{station_name} 업데이트 활성화"
         self._attr_unique_id = f"{DOMAIN}_{station_id}_api_active_switch"
+        self._attr_icon = "mdi:api"
         self._attr_is_on = False
 
     @property
