@@ -7,5 +7,5 @@
   "codeowners": ["@Murianwind"],
   "iot_class": "cloud_polling",
   "config_flow": true,
-  "version": "2.3.1"
+  "version": "2.3.2"
 }
