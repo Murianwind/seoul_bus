@@ -10,11 +10,6 @@ Seoul Bus Sensor for Home Assistant 입니다.<br>
 - 정류장, 버스, 그리고 API. 모두 세가지 센서로 구성됩니다. API 센서는 옵션입니다.
 - **활성화 스위치**: API 호출을 수동으로 제어할 수 있는 스위치가 제공됩니다. (기존의 자동 시간 설정 대체)
 
-![screenshot_1](https://github.com/miumida/seoul_bus/blob/master/image/Screenshot_1.png?raw=true)<br>
-
-[ 버스 센서 ]<br>
-[ API 센서 ]<br>
-
 <br><br>
 ## Version history
 | Version | Date        | 내용              |
