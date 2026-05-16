@@ -9,24 +9,6 @@ Seoul Bus Sensor for Home Assistant 입니다.<br>
 - 지정한 정류장에 도착예정인 버스를 확인할 수 있습니다.
 - 정류장, 버스, 그리고 API. 모두 세가지 센서로 구성됩니다. API 센서는 옵션입니다.
 
-![screenshot_1](https://github.com/miumida/seoul_bus/blob/master/image/Screenshot_1.png?raw=true)<br>
-
-![screenshot_2](https://github.com/miumida/seoul_bus/blob/master/image/Screenshot_2.png?raw=true)<br>
-[ 버스 센서 ]<br>
-![screenshot_4](https://github.com/miumida/seoul_bus/blob/master/image/Screenshot_4.png?raw=true)<br>
-[ API 센서 ]<br>
-![screenshot_5](https://github.com/miumida/seoul_bus/blob/master/image/Screenshot_5.png?raw=true)<br>
-
-<br><br>
-## Version history
-| Version | Date        | 내용              |
-| :-----: | :---------: | ----------------------- |
-| v1.0    | 2020.01.15  | First version  |
-| v1.1    | 2020.01.16  | Exception 처리 추가. API 오류코드/메세지 표시  |
-| v1.2    | 2020.01.20  | xml2dict 문제점 보완. 정류장센서 update_time 구간만 상태반영  |
-| v1.3    | 2020.04.21  | 정류장/버스센서 update_time 구간 상태반영 수정.  |
-| v1.4    | 2020.04.21  | 버스센서 속성명 변경  |
-| v1.4    | 2021.10.24  | manifest.json add version info  |
 
 <br>
 
@@ -41,30 +23,6 @@ Seoul Bus Sensor for Home Assistant 입니다.<br>
 
 <br>
 
-## Usage
-### configuration
-- HA 설정에 Seoul Bus sensor를 추가합니다.<br>
-```yaml
-sensor:
-  - platform: seoul_bus
-    api_key: 'input your api key'
-    api_issued_date: 'input your api issued date'
-    view_type: 'M'
-    stations:
-      - station_id: '03198'
-        name: '서울역'
-        update_time:
-          - start_time: '07:40'
-            end_time: '08:30'
-      - station_id: '24131'
-        name: '잠실중학교'
-        update_time:
-          - start_time: '21:40'
-            end_time: '22:00'
-        include_buses:
-          - bus_id: '100100237'
-        exclude_buses:
-          - bus_id: '100100237'
 ```
 <br><br>
 ### 기본 설정값
@@ -90,7 +48,6 @@ sensor:
 |--|--|
 |station_id| (필수) 정류장 고유번호 |
 |name| (옵션) 정류장 이름 |
-|update_time| (옵션) 특정구간(시작-종료)에서만 센서 업데이트가 필요한 경우, 설정 |
 |include_buses| (옵션) 특정 버스만 보고 싶을 경우, 설정 |
 |exclude_buses| (옵션) 특정 버스만 빼고 보고 싶을 경우, 설정 |
 
@@ -110,19 +67,6 @@ sensor:
 |S| (디폴트) 버스 센서 state를 초로 표시 |
 |M| 버스 센서 state를 00분00초 표시 |
 |A| 버스 센서 state를 API msg로 표시 ( 00분00초후[0번째전] )|
-
-<br>
-
-### update_time 설정값
-
-|옵션|값|
-|--|--|
-|start_time| (필수) 특정구간의 버스정보를 갱신하기 위한 시작시간 |
-|end_time| (필수) 특정구간의 버스정보를 갱신하기 위한 종료시간 |
-
-- 'HH:MM'와 같은 포맷으로 입력 필요.(24시간 체계)
-- start_time은 end_time보다 이전 시간이여야 함.
-- update_time을 설정하지 않는 경우, 4:00 ~ 23:59 구간에 버스정보를 갱신
 
 <br>
 
