@@ -3,7 +3,7 @@ from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.const import CONF_API_KEY
 from homeassistant.helpers import selector
-from .const import DOMAIN, CONF_STATION_ID, CONF_STATION_NAME, CONF_START_TIME, CONF_END_TIME, CONF_INCLUDE_BUSES
+from .const import DOMAIN, CONF_STATION_ID, CONF_STATION_NAME, CONF_INCLUDE_BUSES
 
 class SeoulBusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
@@ -20,15 +20,9 @@ class SeoulBusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema({
-                vol.Required(CONF_API_KEY): str,
+                vol.Required(CONF_API_KEY): selector.TextSelector(selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)),
                 vol.Required(CONF_STATION_ID): str,
                 vol.Optional(CONF_STATION_NAME): str,
-                vol.Optional(CONF_START_TIME, default="00:00"): selector.TextSelector(
-                    selector.TextSelectorConfig(type=selector.TextSelectorType.TIME)
-                ),
-                vol.Optional(CONF_END_TIME, default="00:00"): selector.TextSelector(
-                    selector.TextSelectorConfig(type=selector.TextSelectorType.TIME)
-                ),
                 vol.Optional(CONF_INCLUDE_BUSES): str,
             }),
         )
@@ -50,15 +44,9 @@ class SeoulBusOptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema({
-                vol.Required(CONF_API_KEY, default=conf.get(CONF_API_KEY, "")): str,
+                vol.Required(CONF_API_KEY, default=conf.get(CONF_API_KEY, "")): selector.TextSelector(selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)),
                 vol.Required(CONF_STATION_ID, default=conf.get(CONF_STATION_ID, "")): str,
                 vol.Optional(CONF_STATION_NAME, default=conf.get(CONF_STATION_NAME, "")): str,
-                vol.Optional(CONF_START_TIME, default=conf.get(CONF_START_TIME, "00:00")): selector.TextSelector(
-                    selector.TextSelectorConfig(type=selector.TextSelectorType.TIME)
-                ),
-                vol.Optional(CONF_END_TIME, default=conf.get(CONF_END_TIME, "00:00")): selector.TextSelector(
-                    selector.TextSelectorConfig(type=selector.TextSelectorType.TIME)
-                ),
                 vol.Optional(CONF_INCLUDE_BUSES, default=conf.get(CONF_INCLUDE_BUSES, "")): str,
             }),
         )
