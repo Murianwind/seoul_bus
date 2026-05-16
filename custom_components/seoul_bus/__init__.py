@@ -56,12 +56,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         update_interval=timedelta(seconds=60),
     )
     
-    # 초기 상태 설정
+    # 최초 1회는 데이터를 강제로 불러와서 센서 목록을 생성하고 유지합니다.
+    coordinator.api_enabled = True
     coordinator.last_update_success_time = dt_util.now()
-    # 4. 항목 추가 시 기본 업데이트 활성화 스위치 값은 OFF
+    
+    await coordinator.async_config_entry_first_refresh()
+
+    # 초기 데이터 확보 후 기본값은 OFF로 설정 (스위치의 RestoreEntity가 실제 저장된 값을 복구함)
     coordinator.api_enabled = False
 
-    await coordinator.async_config_entry_first_refresh()
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     
