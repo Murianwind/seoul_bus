@@ -17,7 +17,7 @@ class SeoulBusActiveSwitch(SwitchEntity, RestoreEntity):
         self._coordinator = coordinator
         self._station_id = station_id
         self._station_name = station_name
-        self.entity_id = f"switch.{DOMAIN}_{slugify(station_id)}_api_activation"
+        self.entity_id = f"switch.{DOMAIN}_{slugify(station_id)}_api_active"
         self._attr_name = f"{station_name} 업데이트 활성화"
         self._attr_unique_id = f"{DOMAIN}_{station_id}_api_active_switch"
         self._attr_is_on = False
