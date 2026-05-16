@@ -20,7 +20,7 @@ Seoul Bus Sensor for Home Assistant 입니다.<br>
 | v1.3    | 2020.04.21  | 정류장/버스센서 update_time 구간 상태반영 수정.  |
 | v1.4    | 2020.04.21  | 버스센서 속성명 변경  |
 | v1.4.1  | 2021.10.24  | manifest.json add version info  |
-| v2.0.0  | 2024.05.16  | Config Flow(UI 설정) 도입, 시간 설정 제거 및 활성화 스위치 추가, API 키 보안 강화 |
+| v2.3.0  | 2024.05.16  | Config Flow(UI 설정) 도입, 시간 설정 제거 및 활성화 스위치 추가, API 키 보안 강화 |
 
 <br>
 
