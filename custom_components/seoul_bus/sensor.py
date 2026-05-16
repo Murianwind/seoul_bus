@@ -87,6 +87,7 @@ class SeoulBusStationSensor(SeoulBusBase, SensorEntity):
         self.entity_id = f"sensor.{DOMAIN}_{slugify(station_id)}"
         self._attr_unique_id = unique_id
         self._attr_name = f"{station_name} 상태"
+        self._attr_icon = "mdi:bus-stop-uncovered"
 
     @property
     def state(self):
@@ -100,6 +101,7 @@ class SeoulBusLastUpdateSensor(SeoulBusBase, SensorEntity):
         self.entity_id = f"sensor.{DOMAIN}_{slugify(station_id)}_last_update"
         self._attr_unique_id = unique_id
         self._attr_name = f"{station_name} 마지막 업데이트"
+        self._attr_icon = "mdi:clock-check-outline"
         self._attr_device_class = SensorDeviceClass.TIMESTAMP
 
     @property
@@ -115,6 +117,7 @@ class SeoulBusSensor(SeoulBusBase, SensorEntity):
         
         self.entity_id = f"sensor.{DOMAIN}_{slugify(station_id)}_{slugify(self._bus_route_id)}"
         self._attr_unique_id = unique_id
+        self._attr_icon = "mdi:bus-side"
 
     @property
     def name(self):
