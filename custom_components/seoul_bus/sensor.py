@@ -1,24 +1,77 @@
-from homeassistant.components.switch import SwitchEntity
-from homeassistant.helpers.restore_state import RestoreEntity
+import logging
+from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
-from .const import DOMAIN, CONF_STATION_ID, CONF_STATION_NAME
+from homeassistant.util import slugify
+from .const import DOMAIN, CONF_STATION_ID, CONF_STATION_NAME, CONF_INCLUDE_BUSES
+
+_LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, entry, async_add_entities):
     coordinator = hass.data[DOMAIN][entry.entry_id]
     station_id = entry.data[CONF_STATION_ID]
     station_name = entry.data.get(CONF_STATION_NAME) or f"정류장 {station_id}"
     
-    async_add_entities([SeoulBusActiveSwitch(coordinator, station_id, station_name)])
+    include_str = entry.options.get(CONF_INCLUDE_BUSES, entry.data.get(CONF_INCLUDE_BUSES, ""))
+    include_targets = [x.strip() for x in include_str.split(",")] if include_str else []
+    
+    current_unique_ids = []
+    ent_reg = er.async_get(hass) # 엔티티 레지스트리 객체
+    
+    status_id = f"{DOMAIN}_{station_id}_status_sensor"
+    update_id = f"{DOMAIN}_{station_id}_last_update_sensor"
+    current_unique_ids.extend([status_id, update_id])
+    
+    entities = [
+        SeoulBusStationSensor(coordinator, entry, station_id, station_name, status_id),
+        SeoulBusLastUpdateSensor(coordinator, entry, station_id, station_name, update_id)
+    ]
+    
+    added_bus_ids = set()
 
-class SeoulBusActiveSwitch(SwitchEntity, RestoreEntity):
-    """API 업데이트 활성화/비활성화를 제어하는 스위치"""
-    def __init__(self, coordinator, station_id, station_name):
-        self._coordinator = coordinator
+    # 버스 센서 생성 로직
+    for bus_id in include_targets:
+        bus_unique_id = f"{DOMAIN}_{station_id}_{bus_id}_bus_sensor"
+        if bus_unique_id not in added_bus_ids:
+            # [수정된 부분] 존재하지 않는 함수 대신 올바른 순서로 엔티티 정보 추출
+            # 1. unique_id를 통해 entity_id(예: sensor.seoul_bus_07267_100100203)를 찾음
+            target_entity_id = ent_reg.async_get_entity_id("sensor", DOMAIN, bus_unique_id)
+            
+            last_known_nm = None
+            if target_entity_id:
+                # 2. entity_id가 존재하면 레지스트리에서 상세 entry 정보를 가져옴
+                existing_entry = ent_reg.async_get(target_entity_id)
+                if existing_entry and existing_entry.original_name:
+                    # 기존 이름 "2230 (중랑구청)"에서 노선번호 "2230"만 분리
+                    last_known_nm = existing_entry.original_name.split(" (")[0]
+
+            entities.append(SeoulBusSensor(coordinator, entry, None, station_id, station_name, bus_unique_id, bus_id, last_known_nm))
+            current_unique_ids.append(bus_unique_id)
+            added_bus_ids.add(bus_unique_id)
+
+    if not include_targets and coordinator.data and "items" in coordinator.data:
+        for item in coordinator.data["items"]:
+            bus_route_id = item.get("busRouteId")
+            bus_unique_id = f"{DOMAIN}_{station_id}_{bus_route_id}_bus_sensor"
+            if bus_unique_id not in added_bus_ids:
+                entities.append(SeoulBusSensor(coordinator, entry, item, station_id, station_name, bus_unique_id, bus_route_id))
+                current_unique_ids.append(bus_unique_id)
+                added_bus_ids.add(bus_unique_id)
+
+    # 불필요 엔티티 삭제
+    registered_entities = er.async_entries_for_config_entry(ent_reg, entry.entry_id)
+    for entity_entry in registered_entities:
+        if entity_entry.unique_id not in current_unique_ids:
+            ent_reg.async_remove(entity_entry.entity_id)
+
+    async_add_entities(entities)
+
+class SeoulBusBase(CoordinatorEntity):
+    def __init__(self, coordinator, entry, station_id, station_name):
+        super().__init__(coordinator)
         self._station_id = station_id
         self._station_name = station_name
-        self._attr_name = f"{station_name} 업데이트 활성화"
-        self._attr_unique_id = f"{DOMAIN}_{station_id}_api_active_switch"
-        self._attr_is_on = False
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -28,23 +81,63 @@ class SeoulBusActiveSwitch(SwitchEntity, RestoreEntity):
             manufacturer="Seoul Bus",
         )
 
-    async def async_added_to_hash(self) -> None:
-        """이전 상태 복구"""
-        await super().async_added_to_hash()
-        last_state = await self.async_get_last_state()
-        if last_state:
-            self._attr_is_on = last_state.state == "on"
-            self._coordinator.api_enabled = self._attr_is_on
+class SeoulBusStationSensor(SeoulBusBase, SensorEntity):
+    def __init__(self, coordinator, entry, station_id, station_name, unique_id):
+        super().__init__(coordinator, entry, station_id, station_name)
+        self.entity_id = f"sensor.{DOMAIN}_{slugify(station_id)}"
+        self._attr_unique_id = unique_id
+        self._attr_name = f"{station_name} 상태"
 
-    async def async_turn_on(self, **kwargs):
-        """스위치 ON: API 업데이트 활성화"""
-        self._attr_is_on = True
-        self._coordinator.api_enabled = True
-        await self._coordinator.async_request_refresh()
-        self.async_write_ha_state()
+    @property
+    def state(self):
+        api_on = getattr(self.coordinator, "api_enabled", False)
+        status = (self.coordinator.data or {}).get("status")
+        if not api_on:
+            return "중지됨 (스위치 OFF)"
+        return "운영중" if status == "active" else "대기 중"
 
-    async def async_turn_off(self, **kwargs):
-        """스위치 OFF: API 업데이트 중단"""
-        self._attr_is_on = False
-        self._coordinator.api_enabled = False
-        self.async_write_ha_state()
+class SeoulBusLastUpdateSensor(SeoulBusBase, SensorEntity):
+    def __init__(self, coordinator, entry, station_id, station_name, unique_id):
+        super().__init__(coordinator, entry, station_id, station_name)
+        self.entity_id = f"sensor.{DOMAIN}_{slugify(station_id)}_last_update"
+        self._attr_unique_id = unique_id
+        self._attr_name = f"{station_name} 마지막 업데이트"
+        self._attr_device_class = SensorDeviceClass.TIMESTAMP
+
+    @property
+    def native_value(self):
+        return getattr(self.coordinator, "last_update_success_time", None)
+
+class SeoulBusSensor(SeoulBusBase, SensorEntity):
+    def __init__(self, coordinator, entry, item, station_id, station_name, unique_id, bus_route_id, last_known_nm=None):
+        super().__init__(coordinator, entry, station_id, station_name)
+        self._bus_route_id = bus_route_id
+        # 메모리에 노선번호 저장 (API 데이터 우선 > 레지스트리 기록 우선 > 없으면 ID)
+        self._rt_nm = (item.get("rtNm") if item else None) or last_known_nm
+        
+        self.entity_id = f"sensor.{DOMAIN}_{slugify(station_id)}_{slugify(self._bus_route_id)}"
+        self._attr_unique_id = unique_id
+
+    @property
+    def name(self):
+        # 실시간 데이터에서 노선명 업데이트 및 캐싱
+        items = self.coordinator.data.get("items", [])
+        for item in items:
+            if item.get("busRouteId") == self._bus_route_id:
+                new_rt_nm = item.get("rtNm")
+                if new_rt_nm:
+                    self._rt_nm = new_rt_nm
+                    break
+        
+        display_nm = self._rt_nm if self._rt_nm else self._bus_route_id
+        return f"{display_nm} ({self._station_name})"
+
+    @property
+    def state(self):
+        data = self.coordinator.data or {}
+        items = data.get("items", [])
+        
+        for item in items:
+            if item.get("busRouteId") == self._bus_route_id:
+                return item.get("arrmsg1")
+        return "정보 없음"
