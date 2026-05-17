@@ -1,69 +1,104 @@
-# Seoul Bus Sensor(서울버스)
+# 서울 버스 도착 정보 센서 (Seoul Bus Sensor)
 
-Seoul Bus Sensor for Home Assistant 입니다.<br>
-본 컴포넌트는 [miumida님의 원본 소스](https://github.com/miumida/seoul_bus)를 기반으로 기능 개선 및 UI 설정을 추가한 버전입니다.
+Home Assistant에서 서울시 실시간 버스 도착 정보를 확인할 수 있는 커스텀 구성요소(Custom Component)입니다.  
+본 컴포넌트는 [miumida님의 원본 소스](https://github.com/miumida/seoul_bus)를 기반으로 기능 개선 및 UI 설정 기능을 추가하여 최적화한 버전입니다.
 
-- 서울버스 도착정보를 알려줍니다.
-- 지정한 정류장에 도착예정인 버스를 확인할 수 있습니다.
-- **UI 설정 지원**: 모든 설정을 HA 통합 구성요소 UI에서 진행합니다. (YAML 설정을 지원하지 않습니다.)
-- **엔티티 자동 관리**: 설정된 노선에 따라 센서를 자동으로 생성하고 삭제합니다.
-- **활성화 스위치**: API 호출을 수동으로 제어할 수 있는 스위치가 제공됩니다. (기존의 자동 시간 설정 대체)
+---
 
-## Version history
-| Version | Date        | 내용              |
+## 🚀 주요 기능 (Key Features)
+
+- **실시간 도착 정보 제공 (Real-time Arrival)**: 지정한 정류장에 도착 예정인 버스를 실시간으로 확인하고 제어할 수 있습니다.
+- **100% UI 설정 지원 (Config Flow)**: 모든 설정을 Home Assistant 통합 구성요소 UI 화면에서 진행합니다. (YAML 설정을 지원하지 않습니다.)
+- **스마트한 엔티티 관리 (Dynamic Entities)**: 설정된 버스 노선에 따라 센서 엔티티를 자동으로 생성하고, 불필요해진 엔티티는 스스로 삭제하여 시스템을 깔끔하게 유지합니다.
+- **업데이트 활성화 스위치 (API Control Switch)**: API 호출을 수동으로 켜고 끌 수 있는 토글 스위치가 제공됩니다. 기존의 복잡한 자동 시간 설정을 대체하여 출퇴근 시간 등 필요할 때만 호출함으로써 불필요한 트래픽 낭비를 완벽히 방지합니다.
+- **즉시 새로고침 버튼 (Manual Refresh Button)**: 매 분마다 돌아오는 정기 업데이트 주기 외에도, 원할 때 언제든 즉시 데이터를 수신할 수 있는 새로고침 버튼 엔티티를 지원합니다.
+
+<br>
+
+## 📅 버전 기록 (Version History)
+
+| 버전 | 배포일 | 변경 및 추가 내용 상세 |
 | :-----: | :---------: | ----------------------- |
-| v1.0    | 2020.01.15  | First version  |
-| v1.1    | 2020.01.16  | Exception 처리 추가. API 오류코드/메세지 표시  |
-| v1.2    | 2020.01.20  | xml2dict 문제점 보완. 정류장센서 update_time 구간만 상태반영  |
-| v1.3    | 2020.04.21  | 정류장/버스센서 update_time 구간 상태반영 수정.  |
-| v1.4    | 2020.04.21  | 버스센서 속성명 변경  |
-| v1.4.1  | 2021.10.24  | manifest.json add version info  |
-| v2.0.0  | 2024.05.16  | Config Flow(UI 설정) 도입, 시간 설정 제거 및 활성화 스위치 추가 |
-| v2.3.4  | 2024.05.17  | 새로고침 버튼 추가, 엔티티 ID 최적화 및 불필요 엔티티 자동 삭제 로직 개선 |
+| **v1.0** | 2020.01.15 | **Initial release** (최초 버전 출시) |
+| **v1.1** | 2020.01.16 | **Add exception handling** (예외 처리 추가), API 오류코드 및 에러 메시지 표시 기능 구현 |
+| **v1.2** | 2020.01.20 | **Fix xml2dict issue** (xml2dict 라이브러리 문제점 보완), 정류장 센서의 `update_time` 구간만 상태에 반영 |
+| **v1.3** | 2020.04.21 | 정류장 및 버스 센서의 `update_time` 구간 상태 반영 로직 수정 |
+| **v1.4** | 2020.04.21 | **Change bus sensor attribute name** (버스 센서 속성명 변경) |
+| **v1.4.1**| 2021.10.24 | **manifest.json add version info** (`manifest.json` 파일 내 필수 버전 정보 추가) |
+| **v2.0.0**| 2024.05.16 | **Config Flow configuration** (Config Flow UI 설정 도입), 기존 시간 제어 로직 제거 및 API 활성화 스위치 도입 |
+| **v2.3.4**| 2024.05.17 | **Add refresh button** (즉시 새로고침 버튼 엔티티 추가), 영문 기반 엔티티 ID 최적화 및 불필요 엔티티 자동 삭제 로직 개선 |
 
 <br>
 
-## Credits
-Special thanks to **miumida** for the original [seoul_bus](https://github.com/miumida/seoul_bus) component. This version is a functional fork focused on UI integration and dynamic API control.
+## 🤝 크레딧 (Credits)
 
-## Installation
-### Manual
-- HA 설치 경로 아래 `custom_components` 폴더에 `seoul_bus` 패키지 전체를 넣어줍니다.<br>
-  `<config directory>/custom_components/seoul_bus/` 내부의 모든 파일 (`__init__.py`, `config_flow.py`, `const.py`, `manifest.json`, `sensor.py`, `switch.py`, `button.py` 등)<br>
-- Home Assistant를 재시작합니다.<br>
+> **Special thanks to miumida for the original [seoul_bus](https://github.com/miumida/seoul_bus) component. This version is a functional fork focused on UI integration and dynamic API control.**  
+> 
+> 훌륭한 원본 컴포넌트를 개발해주신 **miumida**님께 진심으로 감사드립니다. 본 버전은 원본 소스를 바탕으로 최신 Home Assistant 환경에 맞춰 UI 통합 설정 및 동적 API 제어 기능에 초점을 맞추어 개선한 기능 포크(Fork) 버전입니다.
 
-<br>
+---
 
-## Usage
-### 통합구성요소 추가 (UI)
-1. Home Assistant 설정 -> 기기 및 서비스 -> 통합구성요소 추가를 누릅니다.
-2. `Seoul Bus`를 검색하여 선택합니다.
-3. 발급받은 API 키와 정류소 번호(ARS-ID)를 입력합니다.
+## 🛠 설치 방법 (Installation)
 
-### 기본 설정값 (UI 진입 시 입력)
+### 수동 설치 (Manual Installation)
+1. Home Assistant 설치 디렉토리(보통 `config`) 아래에 있는 `custom_components` 폴더를 찾습니다.
+2. `custom_components` 폴더 내에 `seoul_bus` 패키지 전체를 복사하여 넣어줍니다.
+   - **경로 예시**: `<config directory>/custom_components/seoul_bus/`
+   - 폴더 내에 `__init__.py`, `config_flow.py`, `const.py`, `manifest.json`, `sensor.py`, `switch.py`, `button.py` 등의 파일이 모두 포함되어 있어야 합니다.
+3. 설치를 마친 후 Home Assistant를 **재시작**합니다.
 
-|옵션|값|
-|--|--|
-|api_key| (필수) 서울버스 API KEY |
-|station_id| (필수) 정류장 고유번호 (ARS-ID) |
+---
 
-<br>
+## ⚙️ 사용 방법 (Usage)
 
-### API KEY 발급
-공공데이터포털에서 **정류소정보조회 서비스**(<https://www.data.go.kr/data/15000303/openapi.do>)를 신청하여 인증키(개인 서비스키)를 발급받습니다.
+### 1. 통합구성요소 추가 (UI Setup)
+1. Home Assistant 사이드바에서 **설정** -> **기기 및 서비스** -> 우측 하단의 **통합구성요소 추가**를 누릅니다.
+2. 검색창에 `Seoul Bus`를 검색하여 선택합니다.
+3. 설정 대화상자가 나타나면 공공데이터포털에서 발급받은 **API 키**와 **정류소 번호(ARS-ID)**를 입력합니다.
 
-<br>
-
-### 옵션 설정값 (통합구성요소 구성 후 '옵션' 메뉴에서 수정 가능)
-
-|옵션|값|
-|--|--|
-|name| (옵션) 표시될 정류장 이름 |
-|include_buses| (옵션) 특정 버스만 필터링하여 보고 싶을 경우, 버스 노선 ID 입력 |
+### 2. 기본 설정값 (UI 첫 진입 시 입력 항목)
+| 옵션 (Option) | 유형 | 설명 및 값 |
+| :--- | :---: | :--- |
+| **api_key** | 필수 | 공공데이터포털에서 발급받은 서울버스 API KEY |
+| **station_id** | 필수 | 데이터를 조회할 정류장 고유번호 (ARS-ID) |
 
 <br>
 
-### 정류장 고유번호(station_id) 값 확인
-- station_id는 5자리 숫자로 된 정류장 고유번호(ARS-ID)입니다.
-- 서울 버스도착정보 - 버스노선 사이트(<http://bus.go.kr/searchResult6.jsp>) 또는 네이버/카카오 지도 등에서 정류장을 조회하여 
-http://googleusercontent.com/immersive_entry_chip/0
+### 🔑 API KEY 발급 방법
+- 공공데이터포털 사이트에 접속하여 **정류소정보조회 서비스**(<https://www.data.go.kr/data/15000303/openapi.do>)를 검색한 후 활용 신청을 진행합니다.
+- 승인이 완료되면 개인 승인 인증키(서비스키)를 발급받을 수 있습니다.
+
+<br>
+
+### 3. 옵션 설정값 (통합구성요소 구성 후 '옵션' 메뉴에서 수정 가능)
+*통합구성요소 배포 완료 후, 해당 카드 창의 **'옵션(Options)'** 메뉴를 클릭하여 언제든지 커스텀 수정이 가능합니다.*
+
+| 옵션 (Option) | 유형 | 설명 및 값 |
+| :--- | :---: | :--- |
+| **name** | 선택 | 대시보드 및 엔티티 이름 뒤에 표시될 사용자 지정 정류장 이름 |
+| **include_buses** | 선택 | 정류장의 모든 버스 노선 대신 **특정 버스만 필터링**하여 보고 싶을 경우, 해당 버스 노선 ID(또는 번호)들을 쉼표(`,`)로 구분하여 입력 |
+
+<br>
+
+### 🚏 정류장 고유번호(station_id) 값 확인 방법
+- `station_id`는 5자리 숫자로 이루어진 정류장 고유번호(ARS-ID)를 의미합니다.
+- 아래의 사이트 및 지도 서비스를 이용하여 탑승하시는 정류장을 검색하시면 5자리 고유 번호를 손쉽게 확인할 수 있습니다.
+  - **서울 버스도착정보 - 버스노선 사이트**: <http://bus.go.kr/searchResult6.jsp>
+  - **포털 지도 서비스**: 네이버 지도, 카카오 맵 등
+
+---
+
+## 📊 생성되는 엔티티(Entity) 상세 설명
+
+통합구성요소가 연결되면 하나의 정류장 기기(Device) 하위에 사용 환경을 제어할 수 있는 다양한 엔티티가 동적으로 생성됩니다.
+
+1. **API 활성화 스위치 (`switch.seoul_bus_[정류장ID]_api_active`)**
+   - 버스 정보 API 호출을 켜고 끄는 마스터 제어 토글 스위치입니다. 이 스위치가 `ON` 상태일 때만 실시간 데이터 갱신이 이루어집니다. 홈어시스턴트의 자동화(Automation) 기능을 활용하여 평일 출퇴근 시간 혹은 외출 직전에만 스위치가 켜지도록 자동화하면 불필요한 API 요청 트래픽을 드라마틱하게 아낄 수 있습니다.
+2. **즉시 새로고침 버튼 (`button.seoul_bus_[정류장ID]_refresh`)**
+   - 기본 업데이트 주기를 기다리지 않고, 사용자가 대시보드 등에서 클릭하는 즉시 공공데이터 서버로부터 최신 버스 도착 정보를 강제로 동기화합니다.
+3. **정류장 상태 센서 (`sensor.seoul_bus_[정류장ID]`)**
+   - 현재 해당 정류장 센서가 정상 작동 중인지 여부를 직관적인 상태값('운영중' / '업데이트 대기중')으로 표현합니다.
+4. **최종 업데이트 시각 센서 (`sensor.seoul_bus_[정류장ID]_last_update`)**
+   - 마지막으로 공공데이터포털 버스 정보 수신에 성공한 정확한 시각을 타임스탬프로 기록합니다.
+5. **실시간 버스 노선 센서 (`sensor.seoul_bus_[정류장ID]_[버스노선ID]`)**
+   - 각 버스 노선별 실시간 정보가 담기는 핵심 센서입니다. 센서의 상태값(State)으로 `5분30초후[3번째 전]`, `곧 도착`, `운행종료` 등의 직관적인 텍스트 메시지를 그대로 표기하여 대시보드 구성이나 알림 자동화 구성 시 매우 편리합니다.
