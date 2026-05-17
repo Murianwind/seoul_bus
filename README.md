@@ -9,8 +9,7 @@ Seoul Bus Sensor for Home Assistant 입니다.<br>
 - **엔티티 자동 관리**: 설정된 노선에 따라 센서를 자동으로 생성하고 삭제합니다.
 - **활성화 스위치**: API 호출을 수동으로 제어할 수 있는 스위치가 제공됩니다. (기존의 자동 시간 설정 대체)
 
-<br>
-# Version history
+## Version history
 | Version | Date        | 내용              |
 | :-----: | :---------: | ----------------------- |
 | v1.0    | 2020.01.15  | First version  |
