@@ -32,8 +32,6 @@ Home Assistant에서 서울시 실시간 버스 도착 정보를 확인할 수 �
 
 ## 🤝 크레딧 (Credits)
 
-> **Special thanks to miumida for the original [seoul_bus](https://github.com/miumida/seoul_bus) component. This version is a functional fork focused on UI integration and dynamic API control.**  
-> 
 > 훌륭한 원본 컴포넌트를 개발해주신 **miumida**님께 진심으로 감사드립니다. 본 버전은 원본 소스를 바탕으로 최신 Home Assistant 환경에 맞춰 UI 통합 설정 및 동적 API 제어 기능에 초점을 맞추어 개선한 기능 포크(Fork) 버전입니다.
 
 ---
