@@ -1,9 +1,5 @@
 # Seoul Bus Sensor(서울버스)
 
-![HAKC)][hakc-shield]
-![HACS][hacs-shield]
-![Version v2.3.4][version-shield]
-
 Seoul Bus Sensor for Home Assistant 입니다.<br>
 본 컴포넌트는 [miumida님의 원본 소스](https://github.com/miumida/seoul_bus)를 기반으로 기능 개선 및 UI 설정을 추가한 버전입니다.
 
