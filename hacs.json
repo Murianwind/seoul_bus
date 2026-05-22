@@ -1,5 +1,5 @@
 {
-  "name": "[KR] Seoul Bus",
+  "name": "Seoul Bus",
   "country": "KR",
   "domains": ["sensor"],
   "render_readme": true
