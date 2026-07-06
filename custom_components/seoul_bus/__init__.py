@@ -23,14 +23,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             _LOGGER.debug("Seoul Bus update skipped: Switch is OFF")
             return {"status": "waiting", "items": coordinator.data.get("items", []) if coordinator.data else []}
 
-        api_key = conf[CONF_API_KEY]
-        station_id = conf[CONF_STATION_ID]
+        api_key = (conf[CONF_API_KEY] or "").strip()
+        station_id = (conf[CONF_STATION_ID] or "").strip()
 
         if not api_key:
             raise UpdateFailed(
                 "API 키가 비어 있습니다. 통합 구성 요소의 '옵션'에서 API 키를 다시 확인/저장해 주세요."
             )
-        url = f"http://ws.bus.go.kr/api/rest/stationinfo/getStationByUid?ServiceKey={api_key}&arsId={station_id}"
+        url = f"http://ws.bus.go.kr/api/rest/stationinfo/getStationByUid?serviceKey={api_key}&arsId={station_id}"
         
         safe_url = url.replace(api_key, "********")
         try:
