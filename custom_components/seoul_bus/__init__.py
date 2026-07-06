@@ -27,27 +27,47 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         station_id = conf[CONF_STATION_ID]
         url = f"http://ws.bus.go.kr/api/rest/stationinfo/getStationByUid?ServiceKey={api_key}&arsId={station_id}"
         
+        safe_url = url.replace(api_key, "********")
         try:
             async with async_timeout.timeout(15):
                 session = async_get_clientsession(hass)
                 async with session.get(url) as response:
                     res_text = await response.text()
-                    data = xmltodict.parse(res_text)
+
+                    # HTTP 상태코드 자체가 비정상이면 XML 파싱을 시도하지 않고 바로 실패 처리
+                    if response.status != 200:
+                        raise UpdateFailed(
+                            f"API HTTP {response.status} at {safe_url}: {res_text[:200]!r}"
+                        )
+
+                    # 응답이 XML 형태가 아니면 (빈 문자열, HTML 에러페이지 등) 원문을 로그에 남기고 실패 처리
+                    if not res_text.strip().startswith("<"):
+                        raise UpdateFailed(
+                            f"Non-XML response at {safe_url}: {res_text[:200]!r}"
+                        )
+
+                    try:
+                        data = xmltodict.parse(res_text)
+                    except Exception as parse_err:
+                        raise UpdateFailed(
+                            f"XML parse error at {safe_url}: {parse_err} | raw={res_text[:200]!r}"
+                        )
+
                     items = data.get('ServiceResult', {}).get('msgBody', {}).get('itemList', [])
                     if not isinstance(items, list): items = [items] if items else []
-                        
+
                     # 2.3: 버스 필터링
                     include_str = conf.get(CONF_INCLUDE_BUSES, "")
                     if include_str:
                         targets = [x.strip() for x in include_str.split(",")]
                         items = [i for i in items if i.get("rtNm") in targets or i.get("busRouteId") in targets]
-                        
+
                     # 마지막 업데이트 시간 기록
                     coordinator.last_update_success_time = dt_util.now()
                     return {"status": "active", "items": items}
+        except UpdateFailed:
+            raise
         except Exception as err:
-            # 로그 출력 시 URL에서 API 키 마스킹
-            safe_url = url.replace(api_key, "********")
             raise UpdateFailed(f"API Error at {safe_url}: {err}")
 
     coordinator = DataUpdateCoordinator(
